@@ -1,0 +1,78 @@
+Sub stockArrange()
+    Dim sheet As Worksheet
+    For Each sheet In Worksheets
+    Dim totalVol As LongPtr
+    Dim interVol As LongPtr
+    Dim oldTickSym As String
+    Dim tickSym As String
+    Dim openStart As Double
+    Dim closeEnd As Double
+    Dim tableLength As LongPtr
+    Dim outputRow As LongPtr
+    
+    sheet.Cells(1, 9).Value = "Ticker"
+    sheet.Cells(1, 10).Value = "Yearly Change"
+    sheet.Cells(1, 11).Value = "Percent Change"
+    sheet.Cells(1, 12).Value = "Total Stock Volume"
+    
+    tickSym = sheet.Cells(2, 1).Value
+    openStart = sheet.Cells(2, 3).Value
+    outputRow = 2
+    tableLength = sheet.Cells(Rows.Count, 1).End(xlUp).Row
+    
+    sheet.Range("k:k").NumberFormat = "0.00%"
+    sheet.Range("q2:q3").NumberFormat = "0.00%"
+    
+    For i = 2 To tableLength
+        oldTickSym = tickSym
+        tickSym = sheet.Cells(i, 1).Value
+        If Not (oldTickSym = tickSym) Then
+        closeEnd = sheet.Cells(i - 1, 6).Value
+        sheet.Cells(outputRow, 9).Value = oldTickSym
+        sheet.Cells(outputRow, 10).Value = closeEnd - openStart
+        If sheet.Cells(outputRow, 10).Value <= 0 Then
+            sheet.Cells(outputRow, 10).Interior.ColorIndex = 3
+        Else
+            sheet.Cells(outputRow, 10).Interior.ColorIndex = 4
+        End If
+        sheet.Cells(outputRow, 11).Value = sheet.Cells(outputRow, 10).Value / openStart
+        sheet.Cells(outputRow, 12).Value = totalVol
+        outputRow = outputRow + 1
+        openStart = sheet.Cells(i, 3).Value
+        totalVol = 0
+        End If
+        interVol = sheet.Cells(i, 7).Value
+        totalVol = totalVol + interVol
+    Next
+    
+    sheet.Cells(2, 15).Value = "Greatest % Increase"
+    sheet.Cells(3, 15).Value = "Greatest % Decrease"
+    sheet.Cells(4, 15).Value = "Greatest Total Volume"
+    sheet.Cells(1, 16).Value = "Ticker"
+    sheet.Cells(1, 17).Value = "Value"
+    
+    newTableLength = sheet.Cells(Rows.Count, 9).End(xlUp).Row
+    greatestIncreaseTick = 2
+    greatestDecreaseTick = 2
+    greatestVolumeTick = 2
+    
+    For i = 2 To newTableLength
+        If sheet.Cells(i, 11).Value > sheet.Cells(greatestIncreaseTick, 11).Value Then
+            greatestIncreaseTick = i
+        ElseIf sheet.Cells(i, 11).Value < sheet.Cells(greatestDecreaseTick, 11).Value Then
+            greatestDecreaseTick = i
+        End If
+        If sheet.Cells(i, 12).Value > sheet.Cells(greatestVolumeTick, 12).Value Then
+            greatestVolumeTick = i
+        End If
+    Next
+    
+    sheet.Cells(2, 16).Value = sheet.Cells(greatestIncreaseTick, 9).Value
+    sheet.Cells(2, 17).Value = sheet.Cells(greatestIncreaseTick, 11).Value
+    sheet.Cells(3, 16).Value = sheet.Cells(greatestDecreaseTick, 9).Value
+    sheet.Cells(3, 17).Value = sheet.Cells(greatestDecreaseTick, 11).Value
+    sheet.Cells(4, 16).Value = sheet.Cells(greatestVolumeTick, 9).Value
+    sheet.Cells(4, 17).Value = sheet.Cells(greatestVolumeTick, 12).Value
+    Next
+End Sub
+
